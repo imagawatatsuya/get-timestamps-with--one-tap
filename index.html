@@ -2,120 +2,195 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- ★ Viewport設定でデバイス幅に合わせ、初期拡大率を1に -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日時をクリップボードにコピー</title>
     <style>
-        /* ★ 基本的なリセットと共通スタイル */
+        /* 基本的なリセットと共通スタイル */
+        html, body {
+            height: 100%; /* htmlとbodyの高さを100%に */
+            margin: 0;
+            padding: 0;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* OS標準フォント優先 */
-            margin: 0; /* 外側の余白をなくす */
-            padding: 20px; /* 内側の余白を確保 */
-            line-height: 1.6; /* 行間を読みやすく */
-            background-color: #f8f9fa; /* 背景色を少しつける */
-            color: #333; /* 基本の文字色 */
-            -webkit-font-smoothing: antialiased; /* iOSでのフォント表示を滑らかに */
-            -moz-osx-font-smoothing: grayscale; /* Firefoxでのフォント表示を滑らかに */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa; /* 全体の背景色 */
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* ★ コンテンツ全体のコンテナ (中央寄せや最大幅設定に便利) */
+        /* メインコンテンツエリア */
         .container {
-            max-width: 600px; /* PCでも見やすいように最大幅を設定 */
-            margin: 0 auto; /* 中央寄せ */
-            background-color: #fff; /* コンテナ背景色 */
-            padding: 25px;
-            border-radius: 8px; /* 角を丸める */
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 軽い影 */
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto; /* PC表示時の中央寄せ */
+            background-color: #fff; /* コンテナの背景色 */
+            padding: 25px 25px 0 25px; /* 下のpaddingは0 */
+            border-radius: 8px 8px 0 0; /* 上の角丸のみ */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 内容物を中央寄せ */
+             /* 重要: 縮まないように設定 */
+             flex-shrink: 0;
         }
 
         h1 {
-            font-size: 1.8em; /* 見出しを少し大きく */
+            font-size: 1.8em;
+            margin-top: 0;
             margin-bottom: 15px;
-            text-align: center; /* 中央寄せ */
+            text-align: center;
             color: #212529;
         }
 
         p {
-            font-size: 1em; /* 本文の文字サイズ */
+            font-size: 1em;
             margin-bottom: 20px;
             text-align: center;
             color: #555;
         }
 
-        /* ★ 日時表示エリア */
         #output {
-            font-family: "SF Mono", "Consolas", "Menlo", monospace; /* 等幅フォント */
-            font-size: 1.1em; /* 少し大きく */
-            background-color: #e9ecef; /* 背景色 */
-            padding: 15px; /* 内側の余白 */
-            border-radius: 6px; /* 角を丸める */
-            margin-bottom: 25px; /* ボタンとの間隔 */
-            text-align: center; /* 中央寄せ */
-            word-wrap: break-word; /* 長い場合に折り返す */
-            color: #000; /* 文字色を黒に */
-        }
-
-        /* ★ コピーボタン */
-        #copyButton {
-            display: block; /* ブロック要素にして幅を指定可能に */
-            width: 100%; /* 幅を100%に */
-            padding: 15px 20px; /* 上下のパディングを増やしてタップしやすく */
-            font-size: 1.1em; /* 文字を少し大きく */
-            font-weight: bold; /* 太字に */
-            color: #fff; /* 文字色を白に */
-            background-color: #007bff; /* ボタンの色 (青系) */
-            border: none; /* 枠線を消す */
-            border-radius: 6px; /* 角を丸める */
-            cursor: pointer; /* カーソルをポインターに */
-            transition: background-color 0.2s ease, transform 0.1s ease; /* ホバーやアクティブ時の変化を滑らかに */
-            -webkit-appearance: none; /* iOSのデフォルトスタイルを無効化 */
-            appearance: none;
-        }
-
-        /* ボタンのホバー時 (PC向け) */
-        #copyButton:hover {
-            background-color: #0056b3;
-        }
-
-        /* ★ ボタンのタップ/クリック時 */
-        #copyButton:active {
-            background-color: #004085;
-            transform: scale(0.98); /* 少し縮小する効果 */
-        }
-
-        /* ★ メッセージ表示エリア */
-        #message, #error {
-            margin-top: 15px;
-            font-size: 0.95em;
-            font-weight: bold;
+            font-family: "SF Mono", "Consolas", "Menlo", monospace;
+            font-size: 1.1em;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px; /* ボタンとの視覚的な間隔 */
             text-align: center;
-            min-height: 1.2em; /* 高さを確保してレイアウトが崩れないように */
+            word-wrap: break-word;
+            color: #000;
+            width: 90%; /* 中央寄せのために幅を指定 */
+            max-width: 400px; /* 最大幅も指定 */
         }
 
-        #message {
-            color: #28a745; /* 成功メッセージ (緑系) */
+        /* アクションエリア (ボタンとメッセージ) */
+        .action-area {
+            background-color: #007bff; /* モバイルではボタンの色に合わせる */
+            padding: 0;
+            max-width: 600px; /* PC表示時の最大幅 */
+            width: 100%;
+            margin: 0 auto; /* PC表示時の中央寄せ */
+            box-sizing: border-box;
+            border-radius: 0 0 8px 8px; /* 下の角丸 (PC表示時) */
+            flex-shrink: 0;
+            /* このエリアが残りの縦スペースを全て占めるようにする */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column; /* ボタンとメッセージを縦に */
         }
 
-        #error {
-            color: #dc3545; /* エラーメッセージ (赤系) */
+        /* コピーボタン */
+        #copyButton {
+            width: 100%;
+            padding: 0 20px; /* 左右のpadding */
+            /* ボタン自体が縦方向のスペースを最大限使う */
+            flex-grow: 1;
+            font-size: 1.6em; /* フォントサイズを大きく */
+            font-weight: bold;
+            color: #fff;
+            background-color: transparent; /* モバイルでは親要素の色を使う */
+            border: none;
+            border-radius: 0; /* 角丸なし */
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            -webkit-appearance: none;
+            appearance: none;
+            /* Flexboxでテキストを天地左右中央揃え */
+            display: flex;
+            align-items: center; /* 垂直中央揃え */
+            justify-content: center; /* 水平中央揃え */
+            text-align: center;
+            line-height: 1.3; /* 行間調整 */
+            box-sizing: border-box; /* paddingを含めて計算 */
+            --active-bg-color: #0056b3; /* モバイルでのActive色 */
+        }
+
+        /* ホバーはモバイルではあまり意味がないが、一応設定 */
+        @media (hover: hover) {
+            #copyButton:not(:active):not(.copied) { /* ActiveとCopied状態以外 */
+               /* background-color: rgba(255, 255, 255, 0.1); */
+            }
+        }
+
+        #copyButton:active {
+            background-color: var(--active-bg-color) !important; /* 確実に適用 */
+            transform: scale(0.99);
+        }
+        /* コピー完了時のスタイル */
+        #copyButton.copied {
+             background-color: #28a745 !important; /* 緑色 */
+             cursor: default;
+        }
+
+
+        /* メッセージ表示エリア (非表示) */
+        #message, #error {
+            display: none;
+        }
+
+
+        /* 画面幅が広い場合 (PCなど) の調整 */
+        @media (min-width: 640px) {
+            body {
+                padding: 20px;
+                background-color: #e9ecef;
+            }
+            .container {
+                border-radius: 8px 8px 0 0;
+                flex-grow: 0; /* PCでは高さ成り行き */
+                align-items: center;
+            }
+            .action-area {
+                 max-width: 600px;
+                 margin: 0 auto 20px auto;
+                 border-radius: 0 0 8px 8px; /* 下の角丸復活 */
+                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                 overflow: hidden; /* 角丸適用のため */
+                 flex-grow: 0; /* PCでは高さいっぱいに伸ばさない */
+                 background-color: #fff; /* PCでは背景を白に戻す */
+            }
+             #copyButton {
+                 flex-grow: 0; /* PCではflex-growをリセット */
+                 padding: 20px 20px; /* PCでは縦方向のサイズをpaddingで指定 */
+                 font-size: 1.3em;
+                 background-color: #007bff; /* PCではボタンに色を戻す */
+                 border-radius: 0 0 8px 8px; /* PCではボタンに下の角丸 */
+                 --active-bg-color: #004085; /* PCでのActive色 */
+             }
+
+             /* ★★★ PC表示でのホバースタイルを修正 ★★★ */
+             #copyButton:hover:not(:active):not(.copied) { /* ActiveとCopied状態以外 */
+                 background-color: #0056b3; /* ★ PC用のホバー色 (暗い青) */
+             }
+             /* ★★★ (ここまで修正) ★★★ */
+
+             #copyButton.copied {
+                 background-color: #28a745 !important; /* PCでもコピー完了色 */
+             }
+             /* PCではメッセージエリアを表示させるならスタイル調整 */
+             /* #message, #error { display: block; ... } */
         }
 
     </style>
 </head>
 <body>
 
-    <!-- ★ コンテナで全体を囲む -->
+    <!-- メインコンテンツエリア -->
     <div class="container">
-        <h1>日時コピー</h1> <!-- タイトルをシンプルに -->
+        <h1>日時コピー</h1>
         <p>ボタンを押すと現在日時をコピーします。</p>
-
-        <!-- 日時表示エリア -->
         <div id="output">（ここに日時が表示されます）</div>
+    </div>
 
-        <!-- コピーボタン -->
+    <!-- アクションエリア (ボタンのみが主役) -->
+    <div class="action-area">
         <button id="copyButton">日時をコピー</button>
-
-        <!-- メッセージ表示用 -->
+        <!-- メッセージエリアは非表示 -->
         <div id="message"></div>
         <div id="error"></div>
     </div>
@@ -123,13 +198,12 @@
     <script>
         const outputElement = document.getElementById('output');
         const copyButton = document.getElementById('copyButton');
+        // メッセージ要素は取得するが、表示には使わない
         const messageElement = document.getElementById('message');
         const errorElement = document.getElementById('error');
 
-        // ゼロ埋め関数
         const padZero = (num) => String(num).padStart(2, '0');
 
-        // 日時を生成して表示する関数
         function generateAndDisplayDateTime() {
             const now = new Date();
             const year = now.getFullYear();
@@ -141,73 +215,65 @@
             const dayIndex = now.getDay();
             const weekDaysShort = ["日", "月", "火", "水", "木", "金", "土"];
             const dayOfWeekShort = weekDaysShort[dayIndex];
-
             const formattedDateTime = `${year}/${padZero(month)}/${padZero(day)}(${dayOfWeekShort}) ${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
-
-            outputElement.textContent = formattedDateTime; // 画面にも表示
-            return formattedDateTime; // 生成した日時文字列を返す
+            outputElement.textContent = formattedDateTime;
+            return formattedDateTime;
         }
 
-        // ボタンがクリック/タップされたときの処理
         copyButton.addEventListener('click', async () => {
-            messageElement.textContent = ''; // メッセージをクリア
-            errorElement.textContent = '';   // エラーメッセージをクリア
-            const textToCopy = generateAndDisplayDateTime(); // 最新の日時を生成
+            // ボタンの状態をリセット
+            copyButton.disabled = false;
+            copyButton.classList.remove('copied');
+            copyButton.textContent = '日時をコピー'; // テキストを元に戻す
+            // メッセージエリアは操作しない
 
-            // Clipboard API が使えるかチェック
+            const textToCopy = generateAndDisplayDateTime();
+
             if (!navigator.clipboard) {
-                errorElement.textContent = 'お使いのブラウザはクリップボード機能に対応していません。';
-                 // 古いブラウザ向けのフォールバック処理はコメントアウト（必要なら有効化）
-                /*
-                try {
-                    const textArea = document.createElement('textarea');
-                    textArea.style.position = 'fixed'; // 画面外に配置
-                    textArea.style.top = '-9999px';
-                    textArea.style.left = '-9999px';
-                    textArea.value = textToCopy;
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    messageElement.textContent = 'コピーしました！';
-                } catch (err) {
-                    console.error('execCommandでのコピーに失敗:', err);
-                    errorElement.textContent = 'コピーに失敗しました。';
-                }
-                */
+                // エラー表示 (ボタンテキスト変更)
+                copyButton.textContent = 'コピー機能非対応';
+                copyButton.disabled = true; // ボタン無効化
+                console.error('クリップボード機能に対応していません。');
                 return;
             }
 
-            // Clipboard API を使ってコピー
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                messageElement.textContent = 'コピーしました！'; // メッセージを短く
                 console.log('日時をクリップボードにコピーしました:', textToCopy);
 
-                // ★ コピー成功後に一時的にボタンのテキストを変更（任意）
-                const originalButtonText = copyButton.textContent;
+                // コピー成功をボタンの状態で示す
                 copyButton.textContent = 'コピー完了✅';
-                copyButton.style.backgroundColor = '#28a745'; // 一時的に緑色に
+                copyButton.classList.add('copied'); // copiedクラスを追加
+                copyButton.disabled = true; // 一時的に無効化
+
+                // 1.5秒後にボタンの状態を元に戻す
                 setTimeout(() => {
-                    copyButton.textContent = originalButtonText;
-                    copyButton.style.backgroundColor = '#007bff'; // 元の色に戻す
-                    messageElement.textContent = ''; // メッセージも消す
-                }, 1500); // 1.5秒後に元に戻す
+                    // ボタンがまだ存在するか確認（ページ遷移などがあった場合のエラー防止）
+                    if(copyButton) {
+                        copyButton.disabled = false;
+                        copyButton.classList.remove('copied');
+                        copyButton.textContent = '日時をコピー';
+                    }
+                }, 1500);
 
             } catch (err) {
                 console.error('クリップボードへのコピーに失敗しました:', err);
-                errorElement.textContent = 'コピーに失敗しました。権限を確認してください。';
+                // コピー失敗をボタンの状態で示す
+                copyButton.textContent = 'コピー失敗';
+                copyButton.disabled = true; // 一時的に無効化
+
+                 // 少し時間をおいて元に戻す
+                setTimeout(() => {
+                     if(copyButton) {
+                        copyButton.disabled = false;
+                        copyButton.textContent = '日時をコピー';
+                    }
+                }, 2000);
             }
         });
 
         // ページ読み込み時に初回の日時を表示
         generateAndDisplayDateTime();
-
-        // 1秒ごとに日時表示を更新 (任意)
-        // setInterval(generateAndDisplayDateTime, 1000);
-        // ※ 頻繁に更新する必要がなければ、初回表示だけでもOK
-
     </script>
 
 </body>
