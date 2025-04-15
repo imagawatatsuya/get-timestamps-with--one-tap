@@ -237,24 +237,24 @@
                 return;
             }
 
-            try {
-                await navigator.clipboard.writeText(textToCopy);
-                console.log('日時をクリップボードにコピーしました:', textToCopy);
+try {
+    await navigator.clipboard.writeText(textToCopy);
+    console.log('日時をクリップボードにコピーしました:', textToCopy);
 
-                // コピー成功をボタンの状態で示す
-                copyButton.textContent = 'コピー完了✅';
-                copyButton.classList.add('copied'); // copiedクラスを追加
-                copyButton.disabled = true; // 一時的に無効化
+    // コピー成功をボタンの状態で示す
+    copyButton.textContent = 'コピー完了✅'; // ここはtextContentのままでOK
+    copyButton.classList.add('copied');
+    copyButton.disabled = true;
 
-                // 1.5秒後にボタンの状態を元に戻す
-                setTimeout(() => {
-                    // ボタンがまだ存在するか確認（ページ遷移などがあった場合のエラー防止）
-                    if(copyButton) {
-                        copyButton.disabled = false;
-                        copyButton.classList.remove('copied');
-                        copyButton.textContent = 'ボタン<br>（日時をコピーする）';
-                    }
-                }, 1500);
+    // 1.5秒後にボタンの状態を元に戻す
+    setTimeout(() => {
+        if(copyButton) {
+            copyButton.disabled = false;
+            copyButton.classList.remove('copied');
+            // ↓↓↓ textContent の代わりに innerHTML を使い、<br> を挿入する ↓↓↓
+            copyButton.innerHTML = 'ボタン<br>（日時をコピーする）';
+        }
+    }, 1500);
 
             } catch (err) {
                 console.error('クリップボードへのコピーに失敗しました:', err);
