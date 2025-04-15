@@ -189,7 +189,7 @@
 
     <!-- アクションエリア (ボタンのみが主役) -->
     <div class="action-area">
-        <button id="copyButton">ボタン<br>（日時をコピーする）</button>
+        <button id="copyButton">ボタン<br>ボタン<br>（日時をコピーする）</button>
         <!-- メッセージエリアは非表示 -->
         <div id="message"></div>
         <div id="error"></div>
@@ -224,7 +224,7 @@
             // ボタンの状態をリセット
             copyButton.disabled = false;
             copyButton.classList.remove('copied');
-            copyButton.textContent = '日時をコピー'; // テキストを元に戻す
+            copyButton.textContent = 'ボタン<br>（日時をコピーする）'; // テキストを元に戻す
             // メッセージエリアは操作しない
 
             const textToCopy = generateAndDisplayDateTime();
